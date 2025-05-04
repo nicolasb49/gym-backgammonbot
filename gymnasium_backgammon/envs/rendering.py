@@ -2,7 +2,7 @@ import pyglet
 from pyglet import gl
 import numpy as np
 from collections import namedtuple
-from gym_backgammon.envs.backgammon import WHITE, BLACK, NUM_POINTS
+from gymnasium_backgammon.envs.backgammon import WHITE, BLACK, NUM_POINTS
 import os
 import platform
 Coords = namedtuple('Coords', ['x', 'y'])
