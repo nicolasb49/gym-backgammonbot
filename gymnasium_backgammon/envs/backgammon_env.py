@@ -26,8 +26,8 @@ class BackgammonEnv(gym.Env):
         ), f"Invalid render_mode {render_mode}"
         self.render_mode = render_mode
 
-        low = np.zeros((198, 1))
-        high = np.ones((198, 1))
+        low = np.zeros((198, 1), dtype=np.float32)
+        high = np.ones((198, 1), dtype=np.float32)
 
         for i in range(3, 97, 4):
             high[i] = 6.0
@@ -37,7 +37,7 @@ class BackgammonEnv(gym.Env):
             high[i] = 6.0
         high[194] = 7.5
 
-        self.observation_space = Box(low=low, high=high)
+        self.observation_space = Box(low=low, high=high, dtype=np.float32)
         self.counter = 0
         self.max_length_episode = 10000
         self.viewer = None
