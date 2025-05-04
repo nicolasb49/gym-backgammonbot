@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import time
 from itertools import count
 import random
@@ -6,7 +6,7 @@ import numpy as np
 from gym_backgammon.envs.backgammon import WHITE, BLACK, COLORS, TOKEN
 
 # env = gym.make('gym_backgammon:backgammon-v0', disable_env_checker=True)
-env = gym.make('gym_backgammon:backgammon-pixel-v0', disable_env_checker=True)
+env = gym.make("gym_backgammon:backgammon-pixel-v0")
 
 random.seed(0)
 np.random.seed(0)
@@ -29,7 +29,9 @@ def make_plays():
 
     agents = {WHITE: RandomAgent(WHITE), BLACK: RandomAgent(BLACK)}
 
-    agent_color, first_roll, observation = env.reset()
+    observation, info = env.reset()
+    agent_color = info["current_agent"]
+    first_roll = info["roll"]
 
     agent = agents[agent_color]
 
@@ -54,7 +56,9 @@ def make_plays():
 
         action = agent.choose_best_action(actions, env)
 
-        observation_next, reward, done, winner = env.step(action)
+        observation_next, reward, terminated, truncated, step_info = env.step(action)
+        done = terminated or truncated
+        winner = step_info.get("winner")
 
         env.render(mode='human')
 
