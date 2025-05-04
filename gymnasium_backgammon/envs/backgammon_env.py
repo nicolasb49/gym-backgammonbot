@@ -1,8 +1,8 @@
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
-from gym_backgammon.envs.backgammon import Backgammon as Game, WHITE, BLACK, COLORS
+from gymnasium_backgammon.envs.backgammon import Backgammon as Game, WHITE, BLACK, COLORS
 from random import randint
-from gym_backgammon.envs.rendering import Viewer
+from gymnasium_backgammon.envs.rendering import Viewer
 import numpy as np
 
 STATE_W = 96

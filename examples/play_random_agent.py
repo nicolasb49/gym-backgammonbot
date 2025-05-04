@@ -3,10 +3,14 @@ import time
 from itertools import count
 import random
 import numpy as np
-from gym_backgammon.envs.backgammon import WHITE, BLACK, COLORS, TOKEN
+from gymnasium_backgammon.envs.backgammon import WHITE, BLACK, COLORS, TOKEN
 
-# env = gym.make('gym_backgammon:backgammon-v0', disable_env_checker=True)
-env = gym.make("gymnasium_backgammon/backgammon-pixel-v0")
+# Example of classic board representation env:
+env = gym.make("gymnasium_backgammon:backgammon-v0", render_mode="human")
+# Gymnasium wraps user envs (e.g., OrderEnforcing).  The wrapper exposes the
+# standard API but not custom helper methods like `get_valid_actions`.
+# Store the raw environment to call helper utilities directly.
+game_env = env.unwrapped
 
 random.seed(0)
 np.random.seed(0)
@@ -37,7 +41,7 @@ def make_plays():
 
     t = time.time()
 
-    env.render(mode='human')
+    env.render()
 
     for i in count():
         if first_roll:
@@ -48,7 +52,7 @@ def make_plays():
 
         print("Current player={} ({} - {}) | Roll={}".format(agent.color, TOKEN[agent.color], COLORS[agent.color], roll))
 
-        actions = env.get_valid_actions(roll)
+        actions = game_env.get_valid_actions(roll)
 
         # print("\nLegal Actions:")
         # for a in actions:
@@ -60,7 +64,7 @@ def make_plays():
         done = terminated or truncated
         winner = step_info.get("winner")
 
-        env.render(mode='human')
+        env.render()
 
         if done:
             if winner is not None:
@@ -75,7 +79,7 @@ def make_plays():
 
             break
 
-        agent_color = env.get_opponent_agent()
+        agent_color = game_env.get_opponent_agent()
         agent = agents[agent_color]
         observation = observation_next
 
