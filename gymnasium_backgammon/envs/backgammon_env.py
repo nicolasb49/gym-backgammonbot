@@ -26,8 +26,8 @@ class BackgammonEnv(gym.Env):
         ), f"Invalid render_mode {render_mode}"
         self.render_mode = render_mode
 
-        low = np.zeros((198, 1), dtype=np.float32)
-        high = np.ones((198, 1), dtype=np.float32)
+        low = np.zeros((198), dtype=np.float32)
+        high = np.ones((198), dtype=np.float32)
 
         for i in range(3, 97, 4):
             high[i] = 6.0
@@ -67,9 +67,9 @@ class BackgammonEnv(gym.Env):
 
         # Get the board representation from the opponent perspective (the
         # current player has already performed the move).
-        observation = self.game.get_board_features(
+        observation = np.array(self.game.get_board_features(
             self.game.get_opponent(self.current_agent)
-        )
+        ))
 
         reward = 0
         terminated = False
@@ -121,7 +121,7 @@ class BackgammonEnv(gym.Env):
         self.game = Game()
         self.counter = 0
 
-        observation = self.game.get_board_features(self.current_agent)
+        observation = np.array(self.game.get_board_features(self.current_agent))
         info = {"current_agent": self.current_agent, "roll": roll}
 
         return observation, info
