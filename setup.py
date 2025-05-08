@@ -11,4 +11,9 @@ setup(
         "stable-baselines3",
         "pyglet",
     ],
+    entry_points={
+        "gymnasium.envs": [
+            "backgammon-v0 = gymnasium_backgammon.envs.backgammon_env:BackgammonEnv",
+        ]
+    },
 )
