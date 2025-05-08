@@ -1,16 +1,14 @@
-from setuptools import setup
-
-# Gymnasium is the maintained fork of OpenAI Gym providing the latest RL
-# environment API (terminated / truncated step API, fixed render modes, etc.).
-# Replace the old `gym` dependency with `gymnasium` so that the package works
-# with the current ecosystem.  Most users can install `gymnasium` with
-# `pip install gymnasium`.
+from setuptools import setup, find_packages
 
 setup(
-    name="gymnasium_backgammon",
-    version="0.0.2",
+    name="backgammonbot",
+    version="0.1.0",
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     install_requires=[
-        "gymnasium>=0.29.1",  # current stable gymnasium release
-        "numpy>=1.19",
+        "numpy",
+        "torch",
+        "stable-baselines3",
+        "pyglet",
     ],
 )
