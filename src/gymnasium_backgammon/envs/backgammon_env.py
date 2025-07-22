@@ -71,18 +71,16 @@ class BackgammonEnv(gym.Env):
             self.game.get_opponent(self.current_agent)
         ))
 
-        reward = 0
+        reward = 0.0
         terminated = False
         truncated = False
 
         winner = self.game.get_winner()
 
         if winner is not None:
-            # practical-issues-in-temporal-difference-learning, pag.3
-            # …leading to a final reward signal z. In the simplest case,
-            # z = 1 if White wins and z = 0 if Black wins
-            if winner == WHITE:
-                reward = 1
+            # Assign symmetrical rewards to both players at the end of the game
+            # so that a win always yields ``+1.0`` and a loss ``-1.0``.
+            reward = 1.0 if winner == self.current_agent else -1.0
             terminated = True
         elif self.counter > self.max_length_episode:
             truncated = True
