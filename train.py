@@ -3,6 +3,7 @@ import os
 
 import gymnasium as gym
 from gymnasium.envs.registration import register
+from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from gymnasium_backgammon.wrappers.action_wrapper import BackgammonActionWrapper
 
@@ -23,8 +24,17 @@ def main():
         # Environment might already be registered
         pass
 
-    env = gym.make("gymnasium_backgammon:backgammon-v0")
-    env = BackgammonActionWrapper(env)
+    seed = 0
+
+    def make_env(rank):
+        def _init():
+            env = gym.make("gymnasium_backgammon:backgammon-v0")
+            env = BackgammonActionWrapper(env)
+            env.seed(seed + rank)
+            return env
+        return _init
+
+    env = SubprocVecEnv([make_env(i) for i in range(8)])
 
     from stable_baselines3 import PPO
 
