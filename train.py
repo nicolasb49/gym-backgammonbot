@@ -1,6 +1,7 @@
 import os
 import argparse
 
+import numpy as np
 import gymnasium as gym
 from gymnasium.envs.registration import register
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
@@ -31,10 +32,13 @@ def make_env(seed: int = 0):
 
 def objective(trial: optuna.trial.Trial) -> float:
     """Optuna objective for PPO hyperparameter search."""
+    # sample hyperparameters
     learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-3, log=True)
-    batch_size = trial.suggest_categorical("batch_size", [64, 128, 256])
+    batch_size    = trial.suggest_categorical("batch_size", [64, 128, 256])
+    n_steps       = trial.suggest_categorical("n_steps", [1024, 2048, 4096])
+    gae_lambda    = trial.suggest_float("gae_lambda", 0.8, 0.99)
 
-    # use a single-process vectorized env for the search
+    # single-process vectorized env for search
     train_env = DummyVecEnv([make_env])
 
     model = PPO(
@@ -42,13 +46,22 @@ def objective(trial: optuna.trial.Trial) -> float:
         train_env,
         learning_rate=learning_rate,
         batch_size=batch_size,
+        n_steps=n_steps,
+        gae_lambda=gae_lambda,
         verbose=0,
         tensorboard_log="logs",
     )
     model.learn(total_timesteps=200_000)
 
+    # evaluate with episode rewards
     eval_env = make_env()
-    mean_reward, _ = evaluate_policy(model, eval_env, n_eval_episodes=5)
+    rewards, _ = evaluate_policy(
+        model,
+        eval_env,
+        n_eval_episodes=5,
+        return_episode_rewards=True
+    )
+    mean_reward = float(np.mean(rewards))
 
     train_env.close()
     eval_env.close()
