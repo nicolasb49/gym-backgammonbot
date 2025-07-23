@@ -63,6 +63,11 @@ class BackgammonEnv(gym.Env):
             "winner" – ``WHITE``/``BLACK`` when *terminated* is True, otherwise None.
         """
 
+        # Compute the pip count and opponent bar checkers before the move
+        old_pip_count = self._pip_count(self.current_agent)
+        opponent = self.game.get_opponent(self.current_agent)
+        old_bar = self.game.bar[opponent]
+
         self.game.execute_play(self.current_agent, action)
 
         # Get the board representation from the opponent perspective (the
@@ -71,7 +76,14 @@ class BackgammonEnv(gym.Env):
             self.game.get_opponent(self.current_agent)
         ))
 
-        reward = 0.0
+        # Reward is primarily shaped by pip reduction and hits during this move
+        new_pip_count = self._pip_count(self.current_agent)
+        new_bar = self.game.bar[opponent]
+
+        pip_reward = max(0, old_pip_count - new_pip_count) * 0.01
+        hit_reward = max(0, new_bar - old_bar) * 0.1
+
+        reward = pip_reward + hit_reward
         terminated = False
         truncated = False
 
@@ -175,6 +187,16 @@ class BackgammonEnv(gym.Env):
     def get_opponent_agent(self):
         self.current_agent = self.game.get_opponent(self.current_agent)
         return self.current_agent
+
+    def _pip_count(self, player):
+        """Return the pip count for ``player``."""
+        pip = 0
+        for point, (checkers, p) in enumerate(self.game.board):
+            if p == player and checkers > 0:
+                distance = point + 1 if player == WHITE else 24 - point
+                pip += distance * checkers
+        pip += 25 * self.game.bar[player]
+        return pip
 
 
 class BackgammonEnvPixel(BackgammonEnv):
