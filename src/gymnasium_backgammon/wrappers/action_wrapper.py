@@ -2,6 +2,18 @@ import gymnasium as gym
 from random import randint
 from gymnasium_backgammon.envs.backgammon import WHITE
 
+
+def _unwrap_to_attr(env, attr: str):
+    """Return the first environment in the wrapper chain that defines ``attr``."""
+    current = env
+    visited = set()
+    while current is not None and id(current) not in visited:
+        if hasattr(current, attr):
+            return current
+        visited.add(id(current))
+        current = getattr(current, "env", getattr(current, "unwrapped", None))
+    return current
+
 class BackgammonActionWrapper(gym.ActionWrapper):
     """Wrap BackgammonEnv to map discrete indices to legal actions."""
 
@@ -20,8 +32,11 @@ class BackgammonActionWrapper(gym.ActionWrapper):
         return observation, info
 
     def step(self, action):
+        # find the underlying env that exposes helper methods
+        base_env = _unwrap_to_attr(self.env, "get_valid_actions")
+
         # find all valid moves for the current roll
-        valid_moves = list(self.env.get_valid_actions(self.roll))
+        valid_moves = list(base_env.get_valid_actions(self.roll))
         # convert the discrete index into a specific play
         if 0 <= action < len(valid_moves):
             selected_action = valid_moves[action]
@@ -33,7 +48,7 @@ class BackgammonActionWrapper(gym.ActionWrapper):
         # prepare next step if the episode has not finished
         if not (terminated or truncated):
             # change player turn inside base env
-            current = self.env.get_opponent_agent()
+            current = base_env.get_opponent_agent()
             # roll dice for next player
             dice = (randint(1, 6), randint(1, 6))
             if current == WHITE:
