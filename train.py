@@ -1,4 +1,5 @@
 import os
+import argparse
 
 import gymnasium as gym
 from gymnasium.envs.registration import register
@@ -60,6 +61,44 @@ def objective(trial: optuna.trial.Trial) -> float:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Backgammon PPO hyperparameter search")
+    parser.add_argument(
+        "--num-envs",
+        type=int,
+        default=1,
+        help="Number of parallel environments to use",
+    )
+    parser.add_argument(
+        "--vec-type",
+        type=str,
+        choices=["dummy", "subproc"],
+        default="dummy",
+        help="Type of vectorized environment",
+    )
+
+    args = parser.parse_args()
+
+    from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+
+    seed = 0
+
+    if args.vec_type == "subproc" and args.num_envs > 1:
+        def make_env(rank):
+            def _init():
+                env = gym.make("gymnasium_backgammon:backgammon-v0")
+                env = BackgammonActionWrapper(env)
+                env.seed(seed + rank)
+                return env
+            return _init
+
+        env = SubprocVecEnv([make_env(i) for i in range(args.num_envs)])
+    else:
+        env = DummyVecEnv([
+            lambda: BackgammonActionWrapper(
+                gym.make("gymnasium_backgammon:backgammon-v0")
+            )
+        ])
+
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=10)
     print("Best params:", study.best_params)
