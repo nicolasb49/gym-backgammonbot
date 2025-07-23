@@ -1466,6 +1466,16 @@ class Backgammon:
     def get_opponent(self, player):
         return BLACK if player == WHITE else WHITE
 
+    def pip_count(self, player: int) -> int:
+        """Compute the total pip count (sum of distances) for ``player``."""
+        pip = 0
+        for point, (checkers, p) in enumerate(self.board):
+            if p == player and checkers > 0:
+                distance = point + 1 if player == WHITE else NUM_POINTS - point
+                pip += distance * checkers
+        pip += (NUM_POINTS + 1) * self.bar[player]
+        return pip
+
     def get_board_features(self, current_player):
         """
         - encode each point (24) with 4 units => 4 * 24 = 96
