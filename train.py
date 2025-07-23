@@ -3,7 +3,7 @@ import os
 
 import gymnasium as gym
 from gymnasium.envs.registration import register
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from gymnasium_backgammon.wrappers.action_wrapper import BackgammonActionWrapper
 
@@ -12,6 +12,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--timesteps", type=int, required=True)
     parser.add_argument("--learning-rate", type=float, required=True)
+    parser.add_argument("--num-envs", type=int, default=1)
+    parser.add_argument(
+        "--vec-type",
+        choices=["dummy", "subproc"],
+        default="dummy",
+    )
     args = parser.parse_args()
 
     try:
@@ -34,7 +40,8 @@ def main():
             return env
         return _init
 
-    env = SubprocVecEnv([make_env(i) for i in range(8)])
+    VecEnvClass = SubprocVecEnv if args.vec_type == "subproc" else DummyVecEnv
+    env = VecEnvClass([make_env(i) for i in range(args.num_envs)])
 
     from stable_baselines3 import PPO
 
