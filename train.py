@@ -88,6 +88,24 @@ def main():
         help="Learning rate for PPO (required in train mode)",
     )
     parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=64,
+        help="Batch size for PPO (only in train mode)",
+    )
+    parser.add_argument(
+        "--n-steps",
+        type=int,
+        default=2048,
+        help="Number of steps to run for each environment per update (only in train mode)",
+    )
+    parser.add_argument(
+        "--gae-lambda",
+        type=float,
+        default=0.95,
+        help="GAE lambda parameter (only in train mode)",
+    )
+    parser.add_argument(
         "--num-envs",
         type=int,
         default=1,
@@ -132,11 +150,14 @@ def main():
                 )
             ])
 
-        # train the PPO model
+        # train the PPO model with CLI hyperparameters
         model = PPO(
             "MlpPolicy",
             env,
             learning_rate=args.learning_rate,
+            batch_size=args.batch_size,
+            n_steps=args.n_steps,
+            gae_lambda=args.gae_lambda,
             verbose=1,
         )
         model.learn(total_timesteps=args.timesteps)
